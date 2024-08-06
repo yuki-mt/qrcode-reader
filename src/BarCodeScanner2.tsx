@@ -11,7 +11,7 @@ const BarcodeReader: React.FC = () => {
     if (!videoRef.current) return;
     const devices = await readerRef.current.listVideoInputDevices();
     const lastDeviceId = devices[devices.length - 1].deviceId;
-    readerRef.current?.decodeFromVideoDevice(lastDeviceId, videoRef.current, (result, err) => {
+    readerRef.current.decodeFromVideoDevice(lastDeviceId, videoRef.current, (result, err) => {
       if (result) {
         // Your logic here
         alert(result.getText());
