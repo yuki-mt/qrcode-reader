@@ -1,17 +1,26 @@
-import React, { useRef, useCallback, useState } from 'react';
+import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
+import { useBeforeUnload } from 'react-router-dom';
 
 const BarcodeReader: React.FC = () => {
   const readerRef = useRef<BrowserMultiFormatReader | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isCameraStarted, setIsCameraStarted] = useState(false);
 
+  // Make sure to reset the reader when the component unmounts
+  useBeforeUnload(() => {
+    readerRef.current?.reset();
+  });
+  useEffect(() => {
+    return () => readerRef.current?.reset();
+  }, []);
+
   const startCamera = useCallback(async () => {
     readerRef.current = new BrowserMultiFormatReader();
     if (!videoRef.current) return;
     const devices = await readerRef.current.listVideoInputDevices();
-    const lastDeviceId = devices[devices.length - 1].deviceId;
-    readerRef.current.decodeFromVideoDevice(lastDeviceId, videoRef.current, (result, err) => {
+    const device = devices.find(d => d.label.includes('back')) ?? devices[devices.length - 1];
+    readerRef.current.decodeFromVideoDevice(device.deviceId, videoRef.current, (result, err) => {
       if (result) {
         // Your logic here
         alert(result.getText());
